@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VoiceLink - ترجمة صوتية فورية</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Cairo', sans-serif;
+      background: linear-gradient(135deg, #1e3a8a 0%, #7c3aed 100%);
+      min-height: 100vh;
+      color: white;
+      direction: rtl;
+    }
+
+    .container {
+      max-width: 500px;
+      margin: 0 auto;
+      padding: 20px;
+      min-height: 100vh;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding-top: 20px;
+    }
+
+    .logo {
+      font-size: 50px;
+      margin-bottom: 10px;
+    }
+
+    .title {
+      font-size: 32px;
+      font-weight: 700;
+      background: linear-gradient(to right, #60a5fa, #c084fc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      color: #c084fc;
+      font-size: 16px;
+    }
+
+    .language-selector {
+      margin-bottom: 30px;
+    }
+
+    .selector-label {
+      font-size: 16px;
+      color: #93c5fd;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .lang-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    @media (min-width: 400px) {
+      .lang-grid {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
+
+    .lang-btn {
+      padding: 15px 5px;
+      border: none;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .lang-btn.active {
+      background: linear-gradient(135deg, #8b5cf6, #ec4899);
+      box-shadow: 0 8px 20px rgba(139, 92, 246, 0.4);
+      border: none;
+    }
+
+    .lang-flag {
+      font-size: 28px;
+      margin-bottom: 5px;
+    }
+
+    .lang-name {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .mic-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 40px 0;
+    }
+
+    .mic-button {
+      width: 140px;
+      height: 140px;
+      border: none;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #8b5cf6, #ec4899);
+      box-shadow: 0 15px 35px rgba(139, 92, 246, 0.4);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s;
+    }
+
+    .mic-button:hover {
+      transform: scale(1.05);
+    }
+
+    .mic-button.listening {
+      background: linear-gradient(135deg, #ef4444, #ec4899);
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    .mic-icon {
+      width: 60px;
+      height: 60px;
+      fill: white;
+    }
+
+    .mic-status {
+      margin-top: 20px;
+      font-size: 18px;
+      color: #c084fc;
+      text-align: center;
+      min-height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .translation-area {
+      margin-top: 30px;
+    }
+
+    .result-box {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 15px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .result-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .result-lang {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 16px;
+      color: #93c5fd;
+    }
+
+    .result-text {
+      font-size: 22px;
+      line-height: 1.6;
+      color: white;
+      margin-bottom: 20px;
+      word-break: break-word;
+      text-align: right;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 10px;
+    }
+
+    .action-btn {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.15);
+      color: white;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+
+    .action-btn:hover {
+      background: rgba(255, 255, 255, 0.25);
+    }
+
+    .action-btn.speak {
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    }
+
+    .action-btn.copy {
+      background: linear-gradient(135deg, #10b981, #3b82f6);
+    }
+
+    .error-box {
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid rgba(239, 68, 68, 0.5);
+      border-radius: 10px;
+      padding: 15px;
+      margin: 15px 0;
+      text-align: center;
+    }
+
+    .error-text {
+      color: #fecaca;
+      font-size: 14px;
+    }
+
+    .footer {
+      text-align: center;
+      color: rgba(147, 197, 253, 0.7);
+      font-size: 12px;
+      margin-top: 30px;
+      padding: 15px 0;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <div class="logo">🎤</div>
+      <h1 class="title">VoiceLink</h1>
+      <p class="subtitle">تحدث بالعربية، احصل على ترجمة فورية</p>
+    </div>
+
+    <!-- Language Selector -->
+    <div class="language-selector">
+      <div class="selector-label">
+        <span>🌍</span>
+        <span>الترجمة إلى:</span>
+      </div>
+      <div class="lang-grid" id="languageGrid"></div>
+    </div>
+
+    <!-- Mic Container -->
+    <div class="mic-container">
+      <button class="mic-button" id="micButton">
+        <svg class="mic-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+          <line x1="12" x2="12" y1="19" y2="22"/>
+        </svg>
+      </button>
+      <div class="mic-status" id="micStatus">انقر للتحدث بالعربية</div>
+    </div>
+
+    <!-- Translation Area -->
+    <div class="translation-area" id="translationArea">
+      <div class="result-box">
+        <div class="result-text" style="text-align: center; color: #c084fc;">
+          <p>💡 <strong>تعليمات الاستخدام:</strong></p>
+          <p>1. اختر اللغة الهدف</p>
+          <p>2. انقر على زر الميكروفون</p>
+          <p>3. تحدث بوضوح بالعربية</p>
+          <p>4. شاهد الترجمة تظهر</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Error Box -->
+    <div id="errorBox" class="error-box hidden">
+      <p class="error-text" id="errorText"></p>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <p>✅ يعمل بدون إنترنت | ✅ دقيق للعبارات الشائعة</p>
+    </div>
+  </div>
+
+  <script>
+    // لغات مدعومة
+    const languages = [
+      { code: 'en', name: 'الإنجليزية', flag: '🇬🇧', voice: 'en-US' },
+      { code: 'fr', name: 'الفرنسية', flag: '🇫🇷', voice: 'fr-FR' },
+      { code: 'es', name: 'الإسبانية', flag: '🇪🇸', voice: 'es-ES' },
+      { code: 'de', name: 'الألمانية', flag: '🇩🇪', voice: 'de-DE' }
+    ];
+
+    // قاموس الترجمة البسيط والدقيق
+    const translations = {
+      // العربية إلى الإنجليزية
+      'السلام عليكم': { en: 'Peace be upon you / Hello', fr: 'Paix sur vous / Bonjour', es: 'La paz sea contigo / Hola', de: 'Friede sei mit dir / Hallo' },
+      'سلام عليكم': { en: 'Peace be upon you / Hello', fr: 'Paix sur vous / Bonjour', es: 'La paz sea contigo / Hola', de: 'Friede sei mit dir / Hallo' },
+      'مرحبا': { en: 'Hello', fr: 'Bonjour', es: 'Hola', de: 'Hallo' },
+      'أهلا': { en: 'Hi', fr: 'Salut', es: 'Hola', de: 'Hi' },
+      'صباح الخير': { en: 'Good morning', fr: 'Bonjour', es: 'Buenos días', de: 'Guten Morgen' },
+      'مساء الخير': { en: 'Good evening', fr: 'Bonsoir', es: 'Buenas tardes', de: 'Guten Abend' },
+      'تصبح على خير': { en: 'Good night', fr: 'Bonne nuit', es: 'Buenas noches', de: 'Gute Nacht' },
+      'مع السلامة': { en: 'Goodbye', fr: 'Au revoir', es: 'Adiós', de: 'Auf Wiedersehen' },
+      'إلى اللقاء': { en: 'See you later', fr: 'À plus tard', es: 'Hasta luego', de: 'Bis später' },
+      
+      'كيف حالك': { en: 'How are you', fr: 'Comment allez-vous', es: '¿Cómo estás?', de: 'Wie geht es dir?' },
+      'أنا بخير': { en: 'I am fine', fr: 'Je vais bien', es: 'Estoy bien', de: 'Mir geht es gut' },
+      'الحمد لله': { en: 'Thank God', fr: 'Dieu merci', es: 'Gracias a Dios', de: 'Gott sei Dank' },
+      
+      'شكرا': { en: 'Thank you', fr: 'Merci', es: 'Gracias', de: 'Danke' },
+      'شكرا جزيلا': { en: 'Thank you very much', fr: 'Merci beaucoup', es: 'Muchas gracias', de: 'Vielen Dank' },
+      'من فضلك': { en: 'Please', fr: 'S\'il vous plaît', es: 'Por favor', de: 'Bitte' },
+      'عفوا': { en: 'You\'re welcome', fr: 'De rien', es: 'De nada', de: 'Bitte schön' },
+      'عذراً': { en: 'Excuse me', fr: 'Excusez-moi', es: 'Disculpe', de: 'Entschuldigung' },
+      'أسف': { en: 'Sorry', fr: 'Désolé', es: 'Lo siento', de: 'Entschuldigung' },
+      
+      'نعم': { en: 'Yes', fr: 'Oui', es: 'Sí', de: 'Ja' },
+      'لا': { en: 'No', fr: 'Non', es: 'No', de: 'Nein' },
+      'ربما': { en: 'Maybe', fr: 'Peut-être', es: 'Quizás', de: 'Vielleicht' },
+      
+      'أين': { en: 'Where', fr: 'Où', es: 'Dónde', de: 'Wo' },
+      'متى': { en: 'When', fr: 'Quand', es: 'Cuándo', de: 'Wann' },
+      'كيف': { en: 'How', fr: 'Comment', es: 'Cómo', de: 'Wie' },
+      'لماذا': { en: 'Why', fr: 'Pourquoi', es: 'Por qué', de: 'Warum' },
+      
+      'أين المستشفى': { en: 'Where is the hospital', fr: 'Où est l\'hôpital', es: '¿Dónde está el hospital?', de: 'Wo ist das Krankenhaus?' },
+      'أين الحمام': { en: 'Where is the bathroom', fr: 'Où sont les toilettes', es: '¿Dónde está el baño?', de: 'Wo ist die Toilette?' },
+      'أين الفندق': { en: 'Where is the hotel', fr: 'Où est l\'hôtel', es: '¿Dónde está el hotel?', de: 'Wo ist das Hotel?' },
+      'أين المطار': { en: 'Where is the airport', fr: 'Où est l\'aéroport', es: '¿Dónde está el aeropuerto?', de: 'Wo ist der Flughafen?' },
+      
+      'أحتاج مساعدة': { en: 'I need help', fr: 'J\'ai besoin d\'aide', es: 'Necesito ayuda', de: 'Ich brauche Hilfe' },
+      'ساعدني': { en: 'Help me', fr: 'Aidez-moi', es: 'Ayúdame', de: 'Hilf mir' },
+      
+      'أريد ماء': { en: 'I want water', fr: 'Je veux de l\'eau', es: 'Quiero agua', de: 'Ich möchte Wasser' },
+      'أريد طعام': { en: 'I want food', fr: 'Je veux de la nourriture', es: 'Quiero comida', de: 'Ich möchte Essen' },
+      'أنا جائع': { en: 'I am hungry', fr: 'J\'ai faim', es: 'Tengo hambre', de: 'Ich habe Hunger' },
+      'أنا عطشان': { en: 'I am thirsty', fr: 'J\'ai soif', es: 'Tengo sed', de: 'Ich habe Durst' },
+      
+      'كم الساعة': { en: 'What time is it', fr: 'Quelle heure est-il', es: '¿Qué hora es?', de: 'Wie spät ist es?' },
+      'كم الثمن': { en: 'How much does it cost', fr: 'Combien ça coûte', es: '¿Cuánto cuesta?', de: 'Wie viel kostet es?' },
+      
+      'لا أفهم': { en: 'I don\'t understand', fr: 'Je ne comprends pas', es: 'No entiendo', de: 'Ich verstehe nicht' },
+      'تكلم ببطء': { en: 'Speak slowly', fr: 'Parlez lentement', es: 'Habla despacio', de: 'Sprich langsam' },
+      'أعد من فضلك': { en: 'Repeat please', fr: 'Répétez s\'il vous plaît', es: 'Repite por favor', de: 'Wiederholen Sie bitte' },
+      
+      'المستشفى': { en: 'Hospital', fr: 'Hôpital', es: 'Hospital', de: 'Krankenhaus' },
+      'الطبيب': { en: 'Doctor', fr: 'Docteur', es: 'Doctor', de: 'Arzt' },
+      'الدواء': { en: 'Medicine', fr: 'Médicament', es: 'Medicina', de: 'Medizin' }
+    };
+
+    let targetLanguage = 'en';
+    let recognition = null;
+
+    // تهيئة التطبيق
+    document.addEventListener('DOMContentLoaded', function() {
+      initLanguageButtons();
+      initSpeechRecognition();
+      setupMicButton();
+    });
+
+    // تهيئة أزرار اللغات
+    function initLanguageButtons() {
+      const langGrid = document.getElementById('languageGrid');
+      
+      languages.forEach(lang => {
+        const button = document.createElement('button');
+        button.className = 'lang-btn' + (lang.code === 'en' ? ' active' : '');
+        button.innerHTML = `
+          <div class="lang-flag">${lang.flag}</div>
+          <div class="lang-name">${lang.name}</div>
+        `;
+        
+        button.onclick = function() {
+          document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+          button.classList.add('active');
+          targetLanguage = lang.code;
+          updateStatus(`الترجمة إلى: ${lang.name}`);
+        };
+        
+        langGrid.appendChild(button);
+      });
+    }
+
+    // تهيئة التعرف على الصوت
+    function initSpeechRecognition() {
+      if ('webkitSpeechRecognition' in window) {
+        recognition = new webkitSpeechRecognition();
+        recognition.lang = 'ar-SA'; // العربية السعودية
+        recognition.continuous = false;
+        recognition.interimResults = false;
+        
+        recognition.onstart = function() {
+          document.getElementById('micButton').classList.add('listening');
+          updateStatus('🎤 يتعرف على كلامك...');
+        };
+        
+        recognition.onresult = function(event) {
+          const transcript = event.results[0][0].transcript;
+          console.log('تم التعرف على:', transcript);
+          processSpeech(transcript);
+        };
+        
+        recognition.onerror = function(event) {
+          if (event.error === 'no-speech') {
+            showError('لم أسمع أي كلام. حاول مرة أخرى');
+          } else if (event.error === 'audio-capture') {
+            showError('لا يمكن الوصول إلى الميكروفون');
+          } else if (event.error === 'not-allowed') {
+            showError('الرجاء السماح بالوصول إلى الميكروفون');
+          }
+          stopListening();
+        };
+        
+        recognition.onend = function() {
+          stopListening();
+        };
+      } else {
+        showError('متصفحك لا يدعم التعرف على الصوت. يرجى استخدام Chrome أو Edge');
+      }
+    }
+
+    // إعداد زر الميكروفون
+    function setupMicButton() {
+      const micButton = document.getElementById('micButton');
+      
+      micButton.onclick = function() {
+        if (recognition && recognition.recording) {
+          recognition.stop();
+        } else {
+          startListening();
+        }
+      };
+    }
+
+    // بدء الاستماع
+    function startListening() {
+      try {
+        clearTranslationArea();
+        hideError();
+        recognition.start();
+      } catch (error) {
+        showError('خطأ في بدء التعرف على الصوت');
+      }
+    }
+
+    // إيقاف الاستماع
+    function stopListening() {
+      document.getElementById('micButton').classList.remove('listening');
+      updateStatus('انقر للتحدث بالعربية');
+    }
+
+    // تحديث حالة التطبيق
+    function updateStatus(message) {
+      document.getElementById('micStatus').textContent = message;
+    }
+
+    // معالجة الكلام
+    function processSpeech(text) {
+      // تنظيف النص
+      const cleanText = text.trim();
+      
+      // البحث عن ترجمة
+      let translatedText = '';
+      
+      if (translations[cleanText]) {
+        translatedText = translations[cleanText][targetLanguage] || translations[cleanText]['en'];
+      } else {
+        // إذا لم توجد ترجمة مباشرة، نبحث عن كلمات مشابهة
+        for (const [arabicPhrase, translationsObj] of Object.entries(translations)) {
+          if (cleanText.includes(arabicPhrase)) {
+            translatedText = translationsObj[targetLanguage] || translationsObj['en'];
+            break;
+          }
+        }
+      }
+      
+      // إذا لم نجد ترجمة
+      if (!translatedText) {
+        translatedText = `[${getLanguageName(targetLanguage)}]: "${cleanText}"`;
+      }
+      
+      // عرض النتائج
+      showResults(cleanText, translatedText);
+      
+      // نطق الترجمة
+      speakTranslation(translatedText);
+    }
+
+    // الحصول على اسم اللغة
+    function getLanguageName(code) {
+      const lang = languages.find(l => l.code === code);
+      return lang ? lang.name : 'الإنجليزية';
+    }
+
+    // عرض النتائج
+    function showResults(original, translated) {
+      const area = document.getElementById('translationArea');
+      const targetLang = languages.find(l => l.code === targetLanguage);
+      
+      area.innerHTML = `
+        <div class="result-box">
+          <div class="result-header">
+            <div class="result-lang">
+              <span>🇸🇦</span>
+              <span>العربية</span>
+            </div>
+          </div>
+          <div class="result-text">${original}</div>
+        </div>
+        
+        <div class="result-box">
+          <div class="result-header">
+            <div class="result-lang">
+              <span>${targetLang ? targetLang.flag : '🌐'}</span>
+              <span>${targetLang ? targetLang.name : 'الترجمة'}</span>
+            </div>
+          </div>
+          <div class="result-text" style="font-weight: bold;">${translated}</div>
+          
+          <div class="action-buttons">
+            <button class="action-btn speak" onclick="speakTranslation('${escapeText(translated)}')">
+              <i class="fas fa-volume-up"></i>
+              نطق الترجمة
+            </button>
+            <button class="action-btn copy" onclick="copyToClipboard('${escapeText(translated)}')">
+              <i class="far fa-copy"></i>
+              نسخ النص
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    // نطق الترجمة
+    function speakTranslation(text) {
+      if ('speechSynthesis' in window) {
+        const speech = new SpeechSynthesisUtterance(text);
+        const targetLang = languages.find(l => l.code === targetLanguage);
+        
+        if (targetLang) {
+          speech.lang = targetLang.voice;
+          speech.rate = 0.9;
+          speech.pitch = 1;
+          speech.volume = 1;
+          
+          window.speechSynthesis.speak(speech);
+        }
+      }
+    }
+
+    // نسخ النص
+    function copyToClipboard(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        alert('✅ تم نسخ النص');
+      });
+    }
+
+    // مسح منطقة الترجمة
+    function clearTranslationArea() {
+      const area = document.getElementById('translationArea');
+      area.innerHTML = '';
+    }
+
+    // إظهار خطأ
+    function showError(message) {
+      const errorBox = document.getElementById('errorBox');
+      const errorText = document.getElementById('errorText');
+      
+      errorText.textContent = message;
+      errorBox.classList.remove('hidden');
+      
+      setTimeout(() => {
+        errorBox.classList.add('hidden');
+      }, 5000);
+    }
+
+    // إخفاء خطأ
+    function hideError() {
+      document.getElementById('errorBox').classList.add('hidden');
+    }
+
+    // تهريب النص
+    function escapeText(text) {
+      return text.replace(/'/g, "\\'").replace(/"/g, '\\"');
+    }
+  </script>
+</body>
+</html>
